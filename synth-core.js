@@ -65,6 +65,6 @@ export function applyCameraPerformance(base,sensor,opts={}){
     }
   }
 
-  const pitchBend=clamp((y*.5 + x*.2 + (energy-.25)*.3)*amount,-1,1);
+  const pitchBend=clamp((y*.5 + x*.2 + energy*.3)*amount,-1,1);
   return {params:out,pitchBend};
 }
