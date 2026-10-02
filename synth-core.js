@@ -33,3 +33,38 @@ export function motionFeatures(prev,curr,w,h,threshold=24){
 export function mutateParams(src, rng=Math.random, amount=.18){
   const out={...src}; for(const k of PARAM_KEYS){ if(rng()>.42) out[k]=clamp((Number(src[k])||0)+(rng()*2-1)*amount); } return out;
 }
+
+export function applyCameraPerformance(base,sensor,opts={}){
+  const depth=clamp(Number(opts.depth ?? .5),0,1);
+  const wildness=clamp(Number(opts.wildness ?? 1),0,4);
+  const chaos=Boolean(opts.chaos);
+  const random=typeof opts.random==='function'?opts.random:Math.random;
+  const x=(clamp(sensor?.x??.5)-.5)*2;
+  const y=(clamp(sensor?.y??.5)-.5)*2;
+  const energy=clamp(sensor?.energy??0);
+  const spread=clamp(sensor?.spread??0);
+  const amount=depth*wildness;
+  const out={...base};
+  const add=(k,delta,max=1)=>{ if(k in out) out[k]=clamp(Number(base[k]??0)+delta,0,max); };
+
+  add('terrainX',x*.48*amount);
+  add('terrainY',y*.48*amount);
+  add('orbit',(x-y)*.22*amount);
+  add('roughness',energy*.72*amount);
+  add('fold',energy*.64*amount);
+  add('brightness',(energy*.62 + y*.2)*amount);
+  add('resonance',(spread*.68 + energy*.24)*amount);
+  add('drift',(energy*.55 + Math.abs(x)*.25)*amount);
+  add('spread',spread*.72*amount);
+  add('delay',(spread*.28 + energy*.22)*amount,.75);
+
+  if(chaos && energy>.18){
+    const burst=clamp((energy-.18)/.82)*amount;
+    for(const k of ['terrainX','terrainY','orbit','roughness','fold','brightness','resonance','drift','spread']){
+      if(k in out) out[k]=clamp(out[k]+(random()*2-1)*.45*burst);
+    }
+  }
+
+  const pitchBend=clamp((y*.5 + x*.2 + (energy-.25)*.3)*amount,-1,1);
+  return {params:out,pitchBend};
+}
