@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { clamp, midiToHz, scaleNotes, terrainSample, motionFeatures, mutateParams, applyCameraPerformance } from '../synth-core.js';
+import { clamp, midiToHz, scaleNotes, terrainSample, motionFeatures, mutateParams, applyCameraPerformance, effectSettings } from '../synth-core.js';
 
 test('clamp keeps values inside bounds', () => {
   assert.equal(clamp(-1, 0, 1), 0);
@@ -43,7 +43,7 @@ test('mutateParams respects normalized parameter bounds', () => {
 
 test('camera performance is bipolar around the base patch and does not rewrite it', () => {
   const base={terrainX:.5,terrainY:.5,roughness:.3,fold:.2,brightness:.4,resonance:.5,delay:.1,drift:.2,spread:.4,orbit:.4};
-  const out=applyCameraPerformance(base,{x:1,y:0,energy:1,spread:1},{depth:1,wildness:2,chaos:false});
+  const out=applyCameraPerformance(base,{x:.8,y:0,energy:1,spread:1},{depth:1,wildness:2,chaos:false});
   assert.equal(base.terrainX,.5);
   assert.ok(out.params.terrainX>.5);
   assert.ok(out.params.terrainY<.5);
@@ -60,4 +60,34 @@ test('camera performance clamps normalized targets even at extreme wildness', ()
   const out=applyCameraPerformance(base,{x:1,y:1,energy:1,spread:1},{depth:1,wildness:4,chaos:true,random:()=>1});
   for(const [k,v] of Object.entries(out.params)){ if(k==='delay') assert.ok(v>=0&&v<=.75); else assert.ok(v>=0&&v<=1); }
   assert.ok(out.pitchBend>=-1&&out.pitchBend<=1);
+});
+
+test('effectSettings maps normalized performance controls into safe DSP ranges', () => {
+  const fx=effectSettings({rift:.75,smear:.5,crush:.8,void:.6,fxMotion:.4});
+  assert.ok(fx.riftDelay >= .0015 && fx.riftDelay <= .018);
+  assert.ok(fx.riftFeedback >= 0 && fx.riftFeedback <= .82);
+  assert.ok(fx.smearDelay >= .004 && fx.smearDelay <= .055);
+  assert.ok(fx.crushHold >= 1 && fx.crushHold <= 29);
+  assert.ok(fx.crushSteps >= 8 && fx.crushSteps <= 4096);
+  assert.ok(fx.voidCutoff >= 240 && fx.voidCutoff <= 9000);
+  assert.ok(fx.voidFeedback >= 0 && fx.voidFeedback <= .78);
+  assert.ok(fx.motionRate >= .05 && fx.motionRate <= 5);
+});
+
+test('effectSettings clamps invalid and extreme values', () => {
+  const fx=effectSettings({rift:99,smear:-3,crush:NaN,void:2,fxMotion:Infinity});
+  for(const value of Object.values(fx)) assert.ok(Number.isFinite(value));
+  assert.ok(fx.riftFeedback <= .82);
+  assert.ok(fx.voidFeedback <= .78);
+});
+
+test('effectSettings preserves bipolar effect character while using magnitude for safety', () => {
+  const neg=effectSettings({rift:-.7,smear:-.6,crush:-.8,void:-.5,fxMotion:-.4});
+  const pos=effectSettings({rift:.7,smear:.6,crush:.8,void:.5,fxMotion:.4});
+  assert.equal(neg.riftDirection,-1); assert.equal(pos.riftDirection,1);
+  assert.equal(neg.crushMode,-1); assert.equal(pos.crushMode,1);
+  assert.equal(neg.voidTone,-1); assert.equal(pos.voidTone,1);
+  assert.equal(neg.motionDirection,-1); assert.equal(pos.motionDirection,1);
+  assert.equal(neg.riftWet,pos.riftWet);
+  assert.notEqual(neg.smearCutoff,pos.smearCutoff);
 });
