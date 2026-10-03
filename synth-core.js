@@ -68,3 +68,30 @@ export function applyCameraPerformance(base,sensor,opts={}){
   const pitchBend=clamp((y*.5 + x*.2 + energy*.3)*amount,-1,1);
   return {params:out,pitchBend};
 }
+
+export function effectSettings(src={}){
+  const signed=k=>{ const n=Number(src[k]); return Number.isFinite(n)?clamp(n,-1,1):0; };
+  const rift=signed('rift'), smear=signed('smear'), crush=signed('crush'), voidAmt=signed('void'), fxMotion=signed('fxMotion');
+  const riftMag=Math.abs(rift), smearMag=Math.abs(smear), crushMag=Math.abs(crush), voidMag=Math.abs(voidAmt), motionMag=Math.abs(fxMotion);
+  return {
+    riftDelay:.0015 + riftMag*.0165,
+    riftFeedback:riftMag*.82,
+    riftWet:riftMag*.62,
+    riftDirection:rift<0?-1:1,
+    smearDelay:.004 + smearMag*.051,
+    smearWet:smearMag*.72,
+    smearFeedback:smearMag*.58,
+    smearCutoff:smear<0 ? 12000-(smearMag*10600) : 3600+(smearMag*10400),
+    crushMix:crushMag*.88,
+    crushHold:1+Math.floor(crushMag*28),
+    crushSteps:Math.max(8,Math.round(4096*(1-crushMag)+16*crushMag)),
+    crushMode:crush<0?-1:1,
+    voidDelay:.08 + voidMag*.34,
+    voidCutoff:voidAmt<0 ? 9000-(voidMag*8760) : 1200+(voidMag*7800),
+    voidFeedback:voidMag*.78,
+    voidWet:voidMag*.8,
+    voidTone:voidAmt<0?-1:1,
+    motionRate:.05 + motionMag*4.95,
+    motionDirection:fxMotion<0?-1:1
+  };
+}
