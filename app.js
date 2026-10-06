@@ -1,3 +1,8 @@
+// Terrain Loom™
+// Copyright © 2026 Sheldon Davidson.
+// Licensed under the MIT License. See LICENSE.
+// SPDX-License-Identifier: MIT
+
 import { clamp, scaleNotes, terrainSample, motionFeatures, mutateParams, applyCameraPerformance, PARAM_KEYS } from './synth-core.js';
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
