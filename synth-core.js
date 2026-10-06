@@ -1,3 +1,8 @@
+// Terrain Loom™
+// Copyright © 2026 Sheldon Davidson.
+// Licensed under the MIT License. See LICENSE.
+// SPDX-License-Identifier: MIT
+
 export const SCALES = {
   chromatic:[0,1,2,3,4,5,6,7,8,9,10,11], major:[0,2,4,5,7,9,11], minor:[0,2,3,5,7,8,10],
   dorian:[0,2,3,5,7,9,10], pentatonic:[0,2,4,7,9], whole:[0,2,4,6,8,10], octatonic:[0,2,3,5,6,8,9,11]
