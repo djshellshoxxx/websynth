@@ -1,3 +1,8 @@
+// Terrain Loom™
+// Copyright © 2026 Sheldon Davidson.
+// Licensed under the MIT License. See LICENSE.
+// SPDX-License-Identifier: MIT
+
 import { effectSettings } from './synth-core.js';
 
 class TerrainLoomProcessor extends AudioWorkletProcessor {
