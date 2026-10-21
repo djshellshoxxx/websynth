@@ -47,3 +47,7 @@ Then open `http://localhost:8000`.
 - `app.js`: Web Audio graph, performance controls, MIDI, camera, recording and presets.
 - `index.html` / `styles.css`: Pages UI.
 - `SPEC.md`: product/technical specification.
+
+## Wiki
+
+Wiki source pages are in [docs/wiki/](docs/wiki/Home.md): developer guide, architecture summary and codebase map. `SPEC.md` is the authority.
